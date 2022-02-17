@@ -179,7 +179,7 @@ class RobotEnv(MujocoEnv):
                 aff_tanh_scaling=10.0,
             )
 
-        print(f"skill_config = {skill_config}")
+        # print(f"skill_config = {skill_config}")
 
         self.skill_controller = SkillController(self, skill_config)
 
