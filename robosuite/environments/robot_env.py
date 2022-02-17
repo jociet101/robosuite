@@ -166,6 +166,21 @@ class RobotEnv(MujocoEnv):
         self.camera_widths = self._input2list(camera_widths, self.num_cameras)
         self.camera_depths = self._input2list(camera_depths, self.num_cameras)
 
+        skill_config = dict(
+                global_xyz_bounds=[
+                    [-0.30, -0.30, 0.80],
+                    [0.15, 0.30, 0.95]
+                ],
+                lift_height=100,
+                binary_gripper=True,
+
+                aff_threshold=0.06,
+                aff_type='dense',
+                aff_tanh_scaling=10.0,
+            )
+
+        print(f"skill_config = {skill_config}")
+
         self.skill_controller = SkillController(self, skill_config)
 
         # sanity checks for camera rendering
