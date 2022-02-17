@@ -131,6 +131,8 @@ class RobotEnv(MujocoEnv):
         skill_config=None,
         robot_configs=None,
     ):
+        print("Initializing robot environment")
+
         # First, verify that correct number of robots are being inputted
         self.env_configuration = env_configuration
         self._check_robot_configuration(robots)

@@ -37,6 +37,7 @@ class SkillController:
         self._num_skill_repeats = 0
 
     def _setup_config(self, config):
+
         default_config = dict(
             success_penalty_fac=1.0,
             aff_penalty_fac=1.0,

@@ -11,6 +11,8 @@ from robosuite.robots.manipulator import Manipulator
 from robosuite.utils.control_utils import DeltaBuffer, RingBuffer
 import robosuite.utils.transform_utils as trans
 
+from robosuite.controllers import skill_controller
+
 import os
 import copy
 
