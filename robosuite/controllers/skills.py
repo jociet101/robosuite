@@ -62,6 +62,7 @@ class BaseSkill:
 
     def get_ori_ac(self, info):
         params = self._params
+        # params = info['params']
         rc_dim = self._config['robot_controller_dim']
         ori = params[3:rc_dim].copy()
         return ori
@@ -171,6 +172,7 @@ class AtomicSkill(BaseSkill):
 
     def get_pos_ac(self, info):
         params = self._params
+        import pdb; pdb.set_trace()
         pos = params[:3].copy()
         is_delta = True
         return pos, is_delta

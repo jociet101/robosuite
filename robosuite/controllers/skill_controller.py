@@ -9,10 +9,12 @@ from robosuite.controllers.skills import (
     PushSkill,
     GripperSkill,
 )
+from robosuite.controllers.skill_dmp import DMPPositionSkill
 
 class SkillController:
 
     SKILL_NAMES = [
+        'dmp',
         'atomic',
         'reach_osc', 'reach',
         'grasp',
@@ -68,7 +70,11 @@ class SkillController:
         for skill_name in skill_names:
             base_skill_config = self._config.get('base_config', {})
             skill_config = copy.deepcopy(base_skill_config)
-            if skill_name == 'atomic':
+            if skill_name == 'dmp':
+                skill_class = DMPPositionSkill
+                print("\nInitialized skill class as dmppositionskill\n")
+                # skill_config.update(self._config.get('atomic_config', {}))
+            elif skill_name == 'atomic':
                 skill_class = AtomicSkill
                 skill_config.update(self._config.get('atomic_config', {}))
             elif skill_name == 'reach':
@@ -113,7 +119,10 @@ class SkillController:
     def get_skill_names(self):
         return list(self._skills.keys())
 
-    def reset(self, action):
+    def reset(self, action, skill_name):
+        # if skill_name=='dmp':
+        #     reset_dmp(action)
+        #     return
         skill_name = self.get_skill_name_from_action(action)
         params = self.get_params_from_action(action)
         self._cur_skill = self._skills[skill_name]
@@ -132,6 +141,11 @@ class SkillController:
         self._pos_is_delta = None
         self._ori_is_delta = None
 
+    def reset_dmp(self, params, start_pos, goal_pos):
+        skill_name = 'dmp'
+        self._skills[skill_name].reset(params, start_pos, goal_pos)
+        self._num_ac_calls = 0
+
     def step(self):
         info = self._get_info()
         skill = self._cur_skill
@@ -140,6 +154,22 @@ class SkillController:
         pos, pos_is_delta = skill.get_pos_ac(info)
         ori, ori_is_delta = skill.get_ori_ac(info)
         g = skill.get_gripper_ac(info)
+
+        self._pos_is_delta = pos_is_delta
+        self._ori_is_delta = ori_is_delta
+        self._num_ac_calls += 1
+
+        return np.concatenate([pos, ori, g])
+
+    def step_dmp(self):
+        info = {}
+        skill_name = 'dmp'
+        skill = self._skills[skill_name]
+        skill.update_state(info)
+
+        pos, pos_is_delta = skill.get_pos_action(info)
+        ori, ori_is_delta = skill.get_ori_action(info)
+        g = skill.get_gripper_action(info)
 
         self._pos_is_delta = pos_is_delta
         self._ori_is_delta = ori_is_delta
@@ -159,6 +189,7 @@ class SkillController:
         return self._pos_is_delta, self._ori_is_delta
 
     def is_success(self):
+        return True
         info = self._get_info()
         return self._cur_skill.is_success(info)
 

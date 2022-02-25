@@ -130,6 +130,8 @@ class RobotEnv(MujocoEnv):
         camera_depths=False,
         skill_config=None,
         robot_configs=None,
+        skill_controller=None,
+        skill_name=None
     ):
         print("Initializing robot environment")
 
@@ -181,7 +183,9 @@ class RobotEnv(MujocoEnv):
 
         # print(f"skill_config = {skill_config}")
 
-        self.skill_controller = SkillController(self, skill_config)
+        # self.skill_controller = SkillController(self, skill_config)
+        self.skill_controller = skill_controller
+        self.skill_name = skill_name
 
         # sanity checks for camera rendering
         if self.use_camera_obs and not self.has_offscreen_renderer:
@@ -374,11 +378,11 @@ class RobotEnv(MujocoEnv):
 
     def step(self, action, image_obs_in_info=False, **kwargs):
         sc = self.skill_controller
-        sc.reset(action)
+        # sc.reset(action, self.skill_name)
         image_obs = []
         reward_sum = 0
         while True:
-            action_ll = sc.step()
+            action_ll = sc.step_dmp()
             _, reward, done, info = super().step(action_ll, **kwargs)
             reward_sum += reward
             if image_obs_in_info:
@@ -390,15 +394,16 @@ class RobotEnv(MujocoEnv):
         info['reward_actions'] = reward_sum
         info['reward_skills'] = reward
 
-        reward = sc.post_process_reward(reward)
+        # reward = sc.post_process_reward(reward)
+        reward = None
 
-        if image_obs_in_info:
-            info['image_obs'] = image_obs
+        # if image_obs_in_info:
+        #     info['image_obs'] = image_obs
         info['num_ac_calls'] = sc.get_num_ac_calls()
         info['skill_complete'] = float(sc.is_success())
-        info['aff_reward'] = sc.get_aff_reward()
-        info['aff_success'] = float(sc.get_aff_success())
-        info.update(self._get_env_info(action))
+        # info['aff_reward'] = sc.get_aff_reward()
+        # info['aff_success'] = float(sc.get_aff_success())
+        # info.update(self._get_env_info(action))
 
         return self._get_observation(), reward, done, info
 

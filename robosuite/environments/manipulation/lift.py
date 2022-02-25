@@ -151,6 +151,8 @@ class Lift(SingleArmEnv):
         camera_widths=256,
         camera_depths=False,
         skill_config=None,
+        skill_controller=None,
+        skill_name=None
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -190,6 +192,8 @@ class Lift(SingleArmEnv):
             camera_widths=camera_widths,
             camera_depths=camera_depths,
             skill_config=skill_config,
+            skill_controller=skill_controller,
+            skill_name=skill_name
         )
 
     def reward(self, action=None):

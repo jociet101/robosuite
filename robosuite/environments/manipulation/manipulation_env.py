@@ -128,6 +128,8 @@ class ManipulationEnv(RobotEnv):
         camera_widths=256,
         camera_depths=False,
         skill_config=None,
+        skill_controller=None,
+        skill_name=None
     ):
         # Robot info
         robots = list(robots) if type(robots) is list or type(robots) is tuple else [robots]
@@ -168,6 +170,8 @@ class ManipulationEnv(RobotEnv):
             camera_depths=camera_depths,
             robot_configs=robot_configs,
             skill_config=skill_config,
+            skill_controller=skill_controller,
+            skill_name=skill_name
         )
 
     @property
