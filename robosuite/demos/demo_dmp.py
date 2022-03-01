@@ -28,11 +28,19 @@ if __name__ == "__main__":
 
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
-    options['control_freq'] = 1
+    options['control_freq'] = 2
 
     # Help message to user
     print()
     print("Press \"H\" to show the viewer control panel.")
+
+    # load weight data from pkl file for both segments
+    demo_path = "./robosuite/demos/data/trial.pkl"
+    with open(demo_path, 'rb') as file:
+        data = pickle.load(file)
+
+    params1 = data['controller_info']['seg:00_dmp_xyz']['dmp_params']
+    params2 = data['controller_info']['seg:01_dmp_xyz']['dmp_params']
 
     param_info_dict = {'continuous': {'size': 15, 'low': [], 'high': [], 'scale': False},
             'discrete': {'size': []}}
@@ -67,33 +75,36 @@ if __name__ == "__main__":
     # Get action limits
     low, high = env.action_spec
 
-    demo_path = "./robosuite/demos/data/demo_params_info.pkl"
-    with open(demo_path, 'rb') as file:
-        data = pickle.load(file)
-
-    params = data['controller_info']['seg:00_dmp_xyz']['dmp_params']
-
-    # look at lift.py
-    # start_pos = [-0.10584563, 0.00258933, 1.00908577]
-    # goal_pos = [-0.00563642, -0.00728302, 0.00751715]
-    # print(params)
-    # print(start_pos)
-    # print(goal_pos)
-
-    # print(params)
-
-    # dmp = skill_dmp.DMPPositionSkill('lift')
-
-    z_offset = 0.011
-    start_pos = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
-    goal_pos = np.array(env.sim.data.body_xpos[env.cube_body_id])
+    # for segment 1
+    # z_offset = 0.011
+    z_offset = 0.028
+    start_pos1 = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
+    goal_pos1 = np.array(env.sim.data.body_xpos[env.cube_body_id])
 
     # goal position plus in Z direction
-    goal_pos[2] = goal_pos[2] + z_offset
-    sc.reset_dmp(params, start_pos, goal_pos)
+    goal_pos1[2] = goal_pos1[2] + z_offset
+    # set dmp params
+    sc.reset_dmp(params1, start_pos1, goal_pos1)
 
     # do visualization
-    for i in range(10000):
+    for i in range(30):
         action = sc.step_dmp()
         obs, reward, done, _ = env.step(action)
         env.render()
+
+    print('segment 1 done')
+
+    # for segment 2
+    start_pos2 = np.copy(goal_pos1)
+    goal_pos2 = np.copy(start_pos1)
+
+    # set dmp params
+    sc.reset_dmp(params2, start_pos2, goal_pos2)
+
+    # do visualization
+    for i in range(30):
+        action = sc.step_dmp()
+        obs, reward, done, _ = env.step(action)
+        env.render()
+
+    print('segment 2 done')
