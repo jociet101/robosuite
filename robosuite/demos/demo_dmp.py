@@ -84,20 +84,16 @@ if __name__ == "__main__":
 
     # dmp = skill_dmp.DMPPositionSkill('lift')
 
-    # z_offset = -0.5
+    z_offset = 0.011
     start_pos = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
     goal_pos = np.array(env.sim.data.body_xpos[env.cube_body_id])
 
-
-    # goal position minus in Z direction
-    # goal_pos[2] = goal_pos[2] + z_offset
-    # pdb.set_trace()
+    # goal position plus in Z direction
+    goal_pos[2] = goal_pos[2] + z_offset
     sc.reset_dmp(params, start_pos, goal_pos)
+
     # do visualization
     for i in range(10000):
         action = sc.step_dmp()
-        # action = dmp.get_pos_action({})
-        # action = np.random.uniform(low, high)
-        # have to change the above line to be dmp action not random
         obs, reward, done, _ = env.step(action)
         env.render()
