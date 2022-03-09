@@ -82,14 +82,18 @@ if __name__ == "__main__":
     goal_pos1 = np.array(env.sim.data.body_xpos[env.cube_body_id])
 
     # goal position plus in Z direction
-    goal_pos1[2] = goal_pos1[2] + z_offset
+    # goal_pos1[2] = goal_pos1[2] + z_offset
     # set dmp params
     sc.reset_dmp(params1, start_pos1, goal_pos1)
 
     # do visualization
     for i in range(30):
-        action = sc.step_dmp()
-        obs, reward, done, _ = env.step(action)
+        gripper_open = True
+        if i > 20:
+            gripper_open = False
+
+        action = sc.step_dmp(gripper_open)
+        obs, reward, done, _ = env.step(action, gripper_open)
         env.render()
 
     print('segment 1 done')
@@ -103,8 +107,10 @@ if __name__ == "__main__":
 
     # do visualization
     for i in range(30):
-        action = sc.step_dmp()
-        obs, reward, done, _ = env.step(action)
+        gripper_open = False
+
+        action = sc.step_dmp(gripper_open)
+        obs, reward, done, _ = env.step(action, gripper_open)
         env.render()
 
     print('segment 2 done')

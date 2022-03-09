@@ -376,13 +376,13 @@ class RobotEnv(MujocoEnv):
             # Lastly, replace camera names with the updated ones
             self.camera_names = temp_names
 
-    def step(self, action, image_obs_in_info=False, **kwargs):
+    def step(self, action, gripper_open, image_obs_in_info=False, **kwargs):
         sc = self.skill_controller
         # sc.reset(action, self.skill_name)
         image_obs = []
         reward_sum = 0
         while True:
-            action_ll = sc.step_dmp()
+            action_ll = sc.step_dmp(gripper_open)
             _, reward, done, info = super().step(action_ll, **kwargs)
             reward_sum += reward
             if image_obs_in_info:

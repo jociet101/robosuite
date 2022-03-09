@@ -161,7 +161,7 @@ class SkillController:
 
         return np.concatenate([pos, ori, g])
 
-    def step_dmp(self):
+    def step_dmp(self, gripper_open):
         info = {}
         skill_name = 'dmp'
         skill = self._skills[skill_name]
@@ -169,13 +169,19 @@ class SkillController:
 
         pos, pos_is_delta = skill.get_pos_action(info)
         ori, ori_is_delta = skill.get_ori_action(info)
-        g = skill.get_gripper_action(info)
+        # g = skill.get_gripper_action(info)
+        if gripper_open:
+            g = -1
+        else:
+            g = 1
 
         self._pos_is_delta = pos_is_delta
         self._ori_is_delta = ori_is_delta
         self._num_ac_calls += 1
 
-        return np.concatenate([pos, ori, g])
+        print(g)
+        # return np.concatenate([pos, ori, g])
+        return np.concatenate([pos, ori, [g]])
 
     def _get_info(self):
         info = self._env._get_skill_info()
