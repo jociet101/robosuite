@@ -179,7 +179,6 @@ class SkillController:
         self._ori_is_delta = ori_is_delta
         self._num_ac_calls += 1
 
-        print(g)
         # return np.concatenate([pos, ori, g])
         return np.concatenate([pos, ori, [g]])
 

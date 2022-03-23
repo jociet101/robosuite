@@ -157,7 +157,11 @@ if __name__ == "__main__":
     print('segment 2 done')
     
     # save the segmented data into info dictionary, then into pkl file
-    info = {'0': segment1, '1': segment2}
+    info = {0: segment1, 1: segment2}
 
-    with open('./data/joint_dmp_data.pkl', 'wb') as f:
+    import os
+    filename = 'data/joint_dmp_data.pkl'
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    with open(filename, 'wb') as f:
         pickle.dump(info, f)
