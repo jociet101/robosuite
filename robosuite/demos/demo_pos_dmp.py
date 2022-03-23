@@ -98,8 +98,8 @@ if __name__ == "__main__":
                 'goal_pos':goal_pos1,
                 'eef_pos':[],
                 'dt':[],
-                'joint_pos':[],
-                'joint_vel':[]}
+                'joint_pos':np.zeros([20,7]),
+                'joint_vel':np.zeros([20,7])}
 
     # do visualization
     for i in range(20):
@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
         segment1['eef_pos'] += [eef_pos]
         segment1['dt'] += [dt]
-        segment1['joint_pos'] += [joint_pos]
-        segment1['joint_vel'] += [joint_vel]
+        segment1['joint_pos'][i] = joint_pos
+        segment1['joint_vel'][i] = joint_vel
 
         env.render()
 
@@ -135,8 +135,8 @@ if __name__ == "__main__":
                 'goal_pos':goal_pos2,
                 'eef_pos':[],
                 'dt':[],
-                'joint_pos':[],
-                'joint_vel':[]}
+                'joint_pos':np.zeros([20,7]),
+                'joint_vel':np.zeros([20,7])}
 
     # do visualization
     for i in range(20):
@@ -149,8 +149,8 @@ if __name__ == "__main__":
 
         segment2['eef_pos'] += [eef_pos]
         segment2['dt'] += [dt]
-        segment2['joint_pos'] += [joint_pos]
-        segment2['joint_vel'] += [joint_vel]
+        segment2['joint_pos'][i] = joint_pos
+        segment2['joint_vel'][i] = joint_vel
 
         env.render()
 
