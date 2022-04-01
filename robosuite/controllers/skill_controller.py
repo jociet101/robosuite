@@ -9,12 +9,13 @@ from robosuite.controllers.skills import (
     PushSkill,
     GripperSkill,
 )
-from robosuite.controllers.skill_dmp import DMPPositionSkill
+from robosuite.controllers.skill_dmp import DMPPositionSkill, DMPJointSkill
 
 class SkillController:
 
     SKILL_NAMES = [
         'dmp',
+        'dmp_joint',
         'atomic',
         'reach_osc', 'reach',
         'grasp',
@@ -74,6 +75,9 @@ class SkillController:
                 skill_class = DMPPositionSkill
                 print("\nInitialized skill class as dmppositionskill\n")
                 # skill_config.update(self._config.get('atomic_config', {}))
+            elif skill_name == 'dmp_joint':
+                skill_class = DMPJointSkill
+                print("\nInitialized skill class as dmpjointskill\n")
             elif skill_name == 'atomic':
                 skill_class = AtomicSkill
                 skill_config.update(self._config.get('atomic_config', {}))
@@ -141,8 +145,7 @@ class SkillController:
         self._pos_is_delta = None
         self._ori_is_delta = None
 
-    def reset_dmp(self, params, start_pos, goal_pos):
-        skill_name = 'dmp'
+    def reset_dmp(self, params, start_pos, goal_pos, skill_name):
         self._skills[skill_name].reset(params, start_pos, goal_pos)
         self._num_ac_calls = 0
 
@@ -161,9 +164,8 @@ class SkillController:
 
         return np.concatenate([pos, ori, g])
 
-    def step_dmp(self, gripper_open):
+    def step_dmp(self, gripper_open, skill_name):
         info = {}
-        skill_name = 'dmp'
         skill = self._skills[skill_name]
         skill.update_state(info)
 
@@ -179,8 +181,10 @@ class SkillController:
         self._ori_is_delta = ori_is_delta
         self._num_ac_calls += 1
 
-        # return np.concatenate([pos, ori, g])
-        return np.concatenate([pos, ori, [g]])
+        if skill_name == 'dmp':
+            return np.concatenate([pos, ori, [g]])
+        elif skill_name == 'dmp_joint':
+            return np.concatenate([pos, [g]])
 
     def _get_info(self):
         info = self._env._get_skill_info()

@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # goal position plus in Z direction
     # goal_pos1[2] = goal_pos1[2] + z_offset
     # set dmp params
-    sc.reset_dmp(params1, start_pos1, goal_pos1)
+    sc.reset_dmp(params1, start_pos1, goal_pos1, 'dmp')
 
     def get_joint_values():
         # seg1_joint_names = env.robots[0].robot_joints
@@ -96,10 +96,14 @@ if __name__ == "__main__":
 
     segment1 = {'start_pos': start_pos1,
                 'goal_pos':goal_pos1,
+                'start_joint_pos': [],
+                'goal_joint_pos': [],
                 'eef_pos':[],
                 'dt':[],
-                'joint_pos':np.zeros([20,7]),
+                'joint_pos':[],
                 'joint_vel':np.zeros([20,7])}
+
+    joint_pos1 = np.zeros([20,7])
 
     # do visualization
     for i in range(20):
@@ -107,20 +111,27 @@ if __name__ == "__main__":
         if i > 15:
             gripper_open = False
 
-        action = sc.step_dmp(gripper_open)
+        action = sc.step_dmp(gripper_open, 'dmp')
         
         obs, reward, done, _ = env.step(action, gripper_open)
 
         eef_pos, dt, joint_pos, joint_vel = get_joint_values()
 
+        if i == 0:
+            segment1['start_joint_pos'] = joint_pos
+        elif i == 19:
+            segment1['goal_joint_pos'] = joint_pos
+
         segment1['eef_pos'] += [eef_pos]
         segment1['dt'] += [dt]
-        segment1['joint_pos'][i] = joint_pos
+        joint_pos1[i] = joint_pos
         segment1['joint_vel'][i] = joint_vel
 
         env.render()
 
     # import pdb; pdb.set_trace()
+
+    segment1['joint_pos'] = [joint_pos1]
 
     print('segment 1 done')
 
@@ -129,30 +140,34 @@ if __name__ == "__main__":
     goal_pos2 = np.copy(start_pos1)
 
     # set dmp params
-    sc.reset_dmp(params2, start_pos2, goal_pos2)
+    sc.reset_dmp(params2, start_pos2, goal_pos2, 'dmp')
 
     segment2 = {'start_pos': start_pos2,
                 'goal_pos':goal_pos2,
                 'eef_pos':[],
                 'dt':[],
-                'joint_pos':np.zeros([20,7]),
+                'joint_pos':[],
                 'joint_vel':np.zeros([20,7])}
+
+    joint_pos2 = np.zeros([20,7])
 
     # do visualization
     for i in range(20):
         gripper_open = False
 
-        action = sc.step_dmp(gripper_open)
+        action = sc.step_dmp(gripper_open, 'dmp')
         obs, reward, done, _ = env.step(action, gripper_open)
 
         eef_pos, dt, joint_pos, joint_vel = get_joint_values()
 
         segment2['eef_pos'] += [eef_pos]
         segment2['dt'] += [dt]
-        segment2['joint_pos'][i] = joint_pos
+        joint_pos2[i] = joint_pos
         segment2['joint_vel'][i] = joint_vel
 
         env.render()
+
+    segment2['joint_pos'] = [joint_pos2]
 
     print('segment 2 done')
     
@@ -160,7 +175,7 @@ if __name__ == "__main__":
     info = {0: segment1, 1: segment2}
 
     import os
-    filename = 'data/joint_dmp_data.pkl'
+    filename = './robosuite/demos/data/joint_dmp_data.pkl'
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     with open(filename, 'wb') as f:

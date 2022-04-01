@@ -198,6 +198,7 @@ class JointPositionController(Controller):
         else:
             scaled_delta = None
 
+        # import pdb; pdb.set_trace()
         self.goal_qpos = set_goal_position(scaled_delta,
                                            self.joint_pos,
                                            position_limit=self.position_limits,
@@ -233,6 +234,7 @@ class JointPositionController(Controller):
         else:
             desired_qpos = np.array(self.goal_qpos)
 
+        # import pdb; pdb.set_trace()
         # torques = pos_err * kp + vel_err * kd
         position_error = desired_qpos - self.joint_pos
         vel_pos_error = -self.joint_vel

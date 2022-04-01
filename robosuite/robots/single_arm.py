@@ -239,6 +239,9 @@ class SingleArm(Manipulator):
             AssertionError: [Invalid action dimension]
         """
 
+        class_name = self.controller.__class__.__name__
+        joint_cont = 'JointPositionController'
+
         # clip actions into valid range
         assert len(action) == self.action_dim, \
             "environment got invalid action dimension -- expected {}, got {}".format(
@@ -258,18 +261,29 @@ class SingleArm(Manipulator):
             set_ori = None
 
             if not pos_is_delta:
-                set_pos = arm_action[:3]
+                if class_name==joint_cont:
+                    set_pos = arm_action[:7]
+                else:
+                    set_pos = arm_action[:3]
 
-            ori_ac = arm_action[3:]
-            if len(ori_ac) > 0 and not ori_is_delta:
-                euler = self.controller.get_global_euler_from_ori_ac(ori_ac)
-                set_ori = trans.euler2mat(euler)
+            if class_name!=joint_cont:
+                ori_ac = arm_action[3:]
+                if len(ori_ac) > 0 and not ori_is_delta:
+                    euler = self.controller.get_global_euler_from_ori_ac(ori_ac)
+                    set_ori = trans.euler2mat(euler)
 
-            self.controller.set_goal(
-                arm_action,
-                set_pos=set_pos,
-                set_ori=set_ori,
-            )
+            # import pdb; pdb.set_trace()
+            if class_name==joint_cont:
+                self.controller.set_goal(
+                    arm_action,
+                    set_qpos=set_pos
+                )
+            else:
+                self.controller.set_goal(
+                    arm_action,
+                    set_pos=set_pos,
+                    set_ori=set_ori
+                )
 
         # Now run the controller for a step
         torques = self.controller.run_controller()

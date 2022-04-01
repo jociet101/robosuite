@@ -382,7 +382,7 @@ class RobotEnv(MujocoEnv):
         image_obs = []
         reward_sum = 0
         while True:
-            action_ll = sc.step_dmp(gripper_open)
+            action_ll = sc.step_dmp(gripper_open, self.skill_name)
             _, reward, done, info = super().step(action_ll, **kwargs)
             reward_sum += reward
             if image_obs_in_info:

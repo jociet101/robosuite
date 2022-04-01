@@ -20,20 +20,22 @@ if __name__ == "__main__":
     options["robots"] = 'Panda'
 
     # Choose controller
-    controller_name = 'OSC_POSE'
+    controller_name = 'JOINT_POSITION'
 
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
-    options['control_freq'] = 2
+    options['control_freq'] = 20
 
     # Help message to user
     print()
     print("Press \"H\" to show the viewer control panel.")
 
     # load weight data from pkl file for both segments
-    demo_path = "./robosuite/demos/data/trial.pkl"
+    demo_path = "./robosuite/demos/data/joint_dmp_params.pkl"
     with open(demo_path, 'rb') as file:
         data = pickle.load(file)
+
+    # import pdb; pdb.set_trace()
 
     params1 = data['controller_info']['seg:00_dmp_xyz']['dmp_params']
     params2 = data['controller_info']['seg:01_dmp_xyz']['dmp_params']
@@ -41,7 +43,7 @@ if __name__ == "__main__":
     param_info_dict = {'continuous': {'size': 15, 'low': [], 'high': [], 'scale': False},
             'discrete': {'size': []}}
 
-    config = {'skills': ['dmp'],
+    config = {'skills': ['dmp_joint'],
         'max_action_calls': 40,
         'params_key': 'stage_0_dmp_xyz',
         'use_axes': True,
@@ -51,7 +53,7 @@ if __name__ == "__main__":
     sc = SkillController(None, config)
 
     options['skill_controller'] = sc
-    options['skill_name'] = 'dmp'
+    options['skill_name'] = 'dmp_joint'
 
     # initialize the task
     env = suite.make(
@@ -73,33 +75,20 @@ if __name__ == "__main__":
 
     # for segment 1
     # z_offset = 0.028
-    start_pos1 = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
-    goal_pos1 = np.array(env.sim.data.body_xpos[env.cube_body_id])
+    # start_pos1 = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
+    # goal_pos1 = np.array(env.sim.data.body_xpos[env.cube_body_id])
+
+    demo_path2 = "./robosuite/demos/data/joint_dmp_data.pkl"
+    with open(demo_path2, 'rb') as file:
+        data2 = pickle.load(file)
+
+    start_pos1 = data2[0]['start_joint_pos']
+    goal_pos1 = data2[0]['goal_joint_pos']
 
     # goal position plus in Z direction
     # goal_pos1[2] = goal_pos1[2] + z_offset
     # set dmp params
-    sc.reset_dmp(params1, start_pos1, goal_pos1)
-
-    def get_joint_values():
-        # seg1_joint_names = env.robots[0].robot_joints
-        joint_pos_idxs = env.robots[0]._ref_joint_pos_indexes
-        joint_vel_idxs = env.robots[0]._ref_joint_vel_indexes
-
-        eef_pos = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
-        joint_pos = np.array([env.sim.data.qpos[x] for x in joint_pos_idxs])
-        joint_vel = np.array([env.sim.data.qvel[x] for x in joint_vel_idxs])
-
-        dt = 0.01
-
-        return eef_pos, dt, joint_pos, joint_vel
-
-    segment1 = {'start_pos': start_pos1,
-                'goal_pos':goal_pos1,
-                'eef_pos':[],
-                'dt':[],
-                'joint_pos':[],
-                'joint_vel':[]}
+    sc.reset_dmp(params1, start_pos1, goal_pos1, 'dmp_joint')
 
     # do visualization
     for i in range(20):
@@ -107,16 +96,9 @@ if __name__ == "__main__":
         if i > 15:
             gripper_open = False
 
-        action = sc.step_dmp(gripper_open)
+        action = sc.step_dmp(gripper_open, 'dmp_joint')
         
         obs, reward, done, _ = env.step(action, gripper_open)
-
-        eef_pos, dt, joint_pos, joint_vel = get_joint_values()
-
-        segment1['eef_pos'] += [eef_pos]
-        segment1['dt'] += [dt]
-        segment1['joint_pos'] += [joint_pos]
-        segment1['joint_vel'] += [joint_vel]
 
         env.render()
 
@@ -129,35 +111,15 @@ if __name__ == "__main__":
     goal_pos2 = np.copy(start_pos1)
 
     # set dmp params
-    sc.reset_dmp(params2, start_pos2, goal_pos2)
-
-    segment2 = {'start_pos': start_pos2,
-                'goal_pos':goal_pos2,
-                'eef_pos':[],
-                'dt':[],
-                'joint_pos':[],
-                'joint_vel':[]}
+    sc.reset_dmp(params2, start_pos2, goal_pos2, 'dmp_joint')
 
     # do visualization
     for i in range(20):
         gripper_open = False
 
-        action = sc.step_dmp(gripper_open)
+        action = sc.step_dmp(gripper_open, 'dmp_joint')
         obs, reward, done, _ = env.step(action, gripper_open)
-
-        eef_pos, dt, joint_pos, joint_vel = get_joint_values()
-
-        segment2['eef_pos'] += [eef_pos]
-        segment2['dt'] += [dt]
-        segment2['joint_pos'] += [joint_pos]
-        segment2['joint_vel'] += [joint_vel]
 
         env.render()
 
     print('segment 2 done')
-    
-    # save the segmented data into info dictionary, then into pkl file
-    info = {'0': segment1, '1': segment2}
-
-    with open('./data/joint_dmp_data.pkl', 'wb') as f:
-        pickle.dump(info, f)
