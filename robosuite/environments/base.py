@@ -292,7 +292,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         return OrderedDict()
 
-    def step(self, action, num_sim_steps=None, render=False):
+    def step(self, action, num_sim_steps=None, render=False, callback=None):
         """
         Takes a step in simulation with control command @action.
 
@@ -332,6 +332,9 @@ class MujocoEnv(metaclass=EnvMeta):
             self._pre_action(action, policy_step)
             self.sim.step()
             policy_step = False
+
+            if callback is not None:
+                callback()
 
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep

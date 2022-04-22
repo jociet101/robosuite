@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # Load the desired controller
     options["controller_configs"] = load_controller_config(default_controller=controller_name)
-    options['control_freq'] = 20
+    options['control_freq'] = 2
 
     # Help message to user
     print()
@@ -91,9 +91,9 @@ if __name__ == "__main__":
     sc.reset_dmp(params1, start_pos1, goal_pos1, 'dmp_joint')
 
     # do visualization
-    for i in range(20):
+    for i in range(150):
         gripper_open = True
-        if i > 15:
+        if i > 130:
             gripper_open = False
 
         action = sc.step_dmp(gripper_open, 'dmp_joint')
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     sc.reset_dmp(params2, start_pos2, goal_pos2, 'dmp_joint')
 
     # do visualization
-    for i in range(20):
+    for i in range(150):
         gripper_open = False
 
         action = sc.step_dmp(gripper_open, 'dmp_joint')

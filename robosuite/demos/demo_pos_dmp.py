@@ -72,14 +72,15 @@ if __name__ == "__main__":
     low, high = env.action_spec
 
     # for segment 1
-    # z_offset = 0.028
+    z_offset = 0.005
     start_pos1 = np.array(env.sim.data.site_xpos[env.robots[0].eef_site_id])
     goal_pos1 = np.array(env.sim.data.body_xpos[env.cube_body_id])
 
     # goal position plus in Z direction
-    # goal_pos1[2] = goal_pos1[2] + z_offset
+    goal_pos1[2] = goal_pos1[2] - z_offset
     # set dmp params
     sc.reset_dmp(params1, start_pos1, goal_pos1, 'dmp')
+
 
     def get_joint_values():
         # seg1_joint_names = env.robots[0].robot_joints
@@ -101,37 +102,41 @@ if __name__ == "__main__":
                 'eef_pos':[],
                 'dt':[],
                 'joint_pos':[],
-                'joint_vel':np.zeros([20,7])}
+                'joint_vel':[]}
 
-    joint_pos1 = np.zeros([20,7])
+    # joint_pos1 = np.zeros([20,7])
 
-    # do visualization
-    for i in range(20):
-        gripper_open = True
-        if i > 15:
-            gripper_open = False
-
-        action = sc.step_dmp(gripper_open, 'dmp')
-        
-        obs, reward, done, _ = env.step(action, gripper_open)
-
+    i = 0
+    def _cb1():
         eef_pos, dt, joint_pos, joint_vel = get_joint_values()
-
         if i == 0:
             segment1['start_joint_pos'] = joint_pos
         elif i == 19:
             segment1['goal_joint_pos'] = joint_pos
 
-        segment1['eef_pos'] += [eef_pos]
-        segment1['dt'] += [dt]
-        joint_pos1[i] = joint_pos
-        segment1['joint_vel'][i] = joint_vel
+        segment1['eef_pos'].append(eef_pos)
+        segment1['dt'].append(dt)
+        segment1['joint_pos'].append(joint_pos)
+        segment1['joint_vel'].append(joint_vel)
+
+    # do visualization
+    while i < 20:
+        gripper_open = True
+        if i > 15:
+            gripper_open = False
+
+        _cb1()
+
+        action = sc.step_dmp(gripper_open, 'dmp')
+        
+        obs, reward, done, _ = env.step(action, gripper_open, callback=_cb1)
 
         env.render()
+        i += 1
 
     # import pdb; pdb.set_trace()
 
-    segment1['joint_pos'] = [joint_pos1]
+    segment1['joint_pos'] = [segment1['joint_pos']]
 
     print('segment 1 done')
 
@@ -147,27 +152,31 @@ if __name__ == "__main__":
                 'eef_pos':[],
                 'dt':[],
                 'joint_pos':[],
-                'joint_vel':np.zeros([20,7])}
+                'joint_vel':[]}
 
-    joint_pos2 = np.zeros([20,7])
+    i = 0
+    def _cb2():
+        eef_pos, dt, joint_pos, joint_vel = get_joint_values()
+
+        segment2['eef_pos'].append(eef_pos)
+        segment2['dt'].append(dt)
+        segment2['joint_pos'].append(joint_pos)
+        segment2['joint_vel'].append(joint_vel)
+
+    # joint_pos2 = np.zeros([20,7])
 
     # do visualization
     for i in range(20):
         gripper_open = False
 
+        _cb2()
+
         action = sc.step_dmp(gripper_open, 'dmp')
-        obs, reward, done, _ = env.step(action, gripper_open)
-
-        eef_pos, dt, joint_pos, joint_vel = get_joint_values()
-
-        segment2['eef_pos'] += [eef_pos]
-        segment2['dt'] += [dt]
-        joint_pos2[i] = joint_pos
-        segment2['joint_vel'][i] = joint_vel
+        obs, reward, done, _ = env.step(action, gripper_open, callback=_cb2)
 
         env.render()
 
-    segment2['joint_pos'] = [joint_pos2]
+    segment2['joint_pos'] = [segment2['joint_pos']]
 
     print('segment 2 done')
     
@@ -175,8 +184,12 @@ if __name__ == "__main__":
     info = {0: segment1, 1: segment2}
 
     import os
-    filename = './robosuite/demos/data/joint_dmp_data.pkl'
+    # joint_dmp_data.pkl has velocity not starting at 0
+    # joint...2.pkl saves before taking first step
+    filename = './robosuite/demos/data/joint_dmp_data2.pkl'
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     with open(filename, 'wb') as f:
         pickle.dump(info, f)
+
+    print("Saved data")
