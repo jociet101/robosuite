@@ -1,11 +1,10 @@
 import numpy as np
 import pickle
-import pdb
+# import pdb
 
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 from robosuite.controllers.skill_controller import SkillController
-# from robosuite.environments.robot_env import RobotEnv
 
 if __name__ == "__main__":
 
